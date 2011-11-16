@@ -50,6 +50,7 @@ def main():
         sites[site] = server
     pprint(sites)
 
+    print("Writing apache configuration to %s" % apacheconf_file)
     apacheconf = open(apacheconf_file, 'w')
     site_names = sites.keys()
     site_names.sort(cmp=site_sort)

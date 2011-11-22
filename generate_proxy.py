@@ -11,8 +11,9 @@ SITE_TEMPLATE = """
     ProxyPassReverse / http://{server}/
 </VirtualHost>
 # Permanent redirect from www.* to the without-www domain.
+# (Or the other way around in case with-www is the default.)
 <VirtualHost *:80>
-    ServerName www.{site}
+    ServerName {www_site}
     RewriteEngine On
     RewriteRule  "^(.*)" "http://{site}$1" [R=301,L]
 </VirtualHost>
@@ -70,7 +71,14 @@ def main():
 
     for site in site_names:
         server = sites[site]
-        site_config = SITE_TEMPLATE.format(site=site, server=server)
+        if site.startswith('www.'):
+            www_site = site[4:]
+            # Ok, this is the non-www site in this case :-)
+        else:
+            www_site = 'www.' + site
+        site_config = SITE_TEMPLATE.format(site=site,
+                                           www_site=www_site,
+                                           server=server)
         apacheconf.write(site_config)
         print("Wrote config for %s." % site)
     apacheconf.close()

@@ -10,7 +10,7 @@ sites in there, grouped by server::
 
     [p-web-ws-00-d04.external-nens.local]
     demo.lizard.net
-    almere.lizard.net
+    almere.lizard.net https
     www.deltaportaal.nl
 
     [s-web-ws-00-d3.external-nens.local]
@@ -42,6 +42,9 @@ So two things happen per site:
 - A ``www.`` is prepended and given a permanent redirect to the non-www
   site. Note that this is reversed in case you yourself place a www site name
   in there.
+
+- If ``https`` is placed after the site name, a redirect from http to https is
+  added. This depends on the Pound setup we have in place now, btw.
 
 It is handy to place a script somewhere (suggestion:
 ``/usr/local/bin/generate_proxy``) with a content like this::

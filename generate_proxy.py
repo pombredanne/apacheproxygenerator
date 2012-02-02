@@ -7,6 +7,7 @@ SITE_TEMPLATE = """
 <VirtualHost *:80>
     ServerName {site}
     ProxyPreserveHost On
+{https_snippet}
     ProxyPass / http://{server}/
     ProxyPassReverse / http://{server}/
 </VirtualHost>
@@ -15,9 +16,16 @@ SITE_TEMPLATE = """
 <VirtualHost *:80>
     ServerName {www_site}
     RewriteEngine On
-    RewriteRule  "^(.*)" "http://{site}$1" [R=301,L]
+    RewriteRule  "^(.*)" "{http}://{site}$1" [R=301,L]
 </VirtualHost>
 
+"""
+
+HTTPS_SNIPPET = """
+    # Redirect to https if we don't detect Pound's x-ssl-cipher http header.
+    RewriteEngine on
+    RewriteCond %{{HTTP:X-SSL-cipher}} =""
+    RewriteRule ^(.*) https://{site}$1 [L]
 """
 
 def site_sort(a, b):
@@ -41,12 +49,16 @@ def main():
     ini_lines = [line for line in ini_lines if line]
     ini_lines = [line for line in ini_lines if not line.startswith('#')]
     sites = {}
+    https_sites = []
     server = None
     for line in ini_lines:
         if line.startswith('['):
             line = line.strip('[]')
             server = line.strip()
             continue
+        if line.endswith('https'):
+            line = line.rstrip('https').strip()
+            https_sites.append(line)
         site = line
         sites[site] = server
     pprint(sites)
@@ -76,9 +88,17 @@ def main():
             # Ok, this is the non-www site in this case :-)
         else:
             www_site = 'www.' + site
+        if site in https_sites:
+            http = 'https'
+            https_snippet = HTTPS_SNIPPET.format(site=site)
+        else:
+            http = 'http'
+            https_snippet = ''
         site_config = SITE_TEMPLATE.format(site=site,
                                            www_site=www_site,
-                                           server=server)
+                                           server=server,
+                                           http=http,
+                                           https_snippet=https_snippet)
         apacheconf.write(site_config)
         print("Wrote config for %s." % site)
     apacheconf.close()

@@ -16,7 +16,7 @@ SITE_TEMPLATE = """
 <VirtualHost *:80>
     ServerName {www_site}
     RewriteEngine On
-    RewriteRule  "^(.*)" "{http}://{site}$1" [R=301,L]
+    RewriteRule  "^(.*)" "{http}://{site}$1" [R=301,NE,L]
 </VirtualHost>
 
 """
@@ -25,7 +25,7 @@ HTTPS_SNIPPET = """
     # Redirect to https if we don't detect Pound's x-ssl-cipher http header.
     RewriteEngine on
     RewriteCond %{{HTTP:X-SSL-cipher}} =""
-    RewriteRule ^(.*) https://{site}$1 [L]
+    RewriteRule ^(.*) https://{site}$1 [L,NE]
 """
 
 def site_sort(a, b):
@@ -106,4 +106,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
